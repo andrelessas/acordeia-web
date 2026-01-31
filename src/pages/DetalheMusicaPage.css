@@ -1,0 +1,102 @@
+.detalhe-musica-container {
+  animation: fadeIn var(--transition-slow);
+}
+
+.detalhe-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+@media (min-width: 768px) {
+  .detalhe-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.btn-back {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
+  transition: all var(--transition);
+}
+
+.btn-back:hover {
+  color: var(--color-text-primary);
+  background: var(--color-surface-hover);
+}
+
+.musica-info {
+  flex: 1;
+}
+
+.musica-info h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-1);
+}
+
+.musica-info .artista {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+.musica-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.btn-tom {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  transition: all var(--transition);
+}
+
+.btn-tom:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-tom strong {
+  color: var(--color-acorde);
+  font-family: var(--font-mono);
+}
+
+.btn-favorito {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  transition: all var(--transition);
+}
+
+.btn-favorito:hover {
+  background: var(--color-danger-subtle);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.btn-favorito.active {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}

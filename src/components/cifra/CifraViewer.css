@@ -1,0 +1,21 @@
+.cifra-viewer {
+  padding: var(--space-4);
+  background: var(--color-background-subtle);
+  border-radius: var(--border-radius-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 768px) {
+  .cifra-viewer {
+    padding: var(--space-6);
+  }
+}
+
+/* Modo palco - sem background e padding */
+.modo-palco .cifra-viewer {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  overflow-x: hidden;
+}

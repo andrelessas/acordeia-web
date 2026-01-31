@@ -1,0 +1,56 @@
+.card-musica {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  min-height: 140px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.card-musica-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.card-musica-titulo {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  line-height: var(--line-height-tight);
+}
+
+.card-musica-artista {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.card-musica-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.badge-favorito {
+  color: var(--color-acorde);
+  font-size: var(--font-size-lg);
+  line-height: 1;
+}
+
+.badge-tom {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-full);
+  background: var(--color-acorde-bg);
+  color: var(--color-acorde);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-bold);
+}

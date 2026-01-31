@@ -1,0 +1,13 @@
+.favoritos-container {
+  animation: fadeIn var(--transition-slow);
+}
+
+.favoritos-header {
+  margin-bottom: var(--space-6);
+}
+
+.favoritos-header h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+}
