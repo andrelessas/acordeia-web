@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Musica } from '../../types/musica';
 import './CardMusica.css';
 
@@ -7,8 +7,14 @@ interface Props {
 }
 
 export function CardMusica({ musica }: Props) {
+  const location = useLocation();
+  
   return (
-    <Link to={`/musica/${musica.id}`} className="card card-interactive card-musica">
+    <Link 
+      to={`/musica/${musica.id}`} 
+      state={{ from: location.pathname }}
+      className="card card-interactive card-musica"
+    >
       <div className="card-musica-header">
         <h3 className="card-musica-titulo truncate">{musica.titulo}</h3>
         {musica.favorita && (

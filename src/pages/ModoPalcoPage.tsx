@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { musicasService } from '../services/musicasService';
 import { MusicaDetalhada } from '../types/musica';
 import { CifraViewer } from '../components/cifra/CifraViewer';
@@ -10,9 +10,13 @@ export function ModoPalcoPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [musica, setMusica] = useState<MusicaDetalhada | null>(null);
   const [carregando, setCarregando] = useState(true);
+
+  // Detectar de onde o usuário veio
+  const voltarPara = (location.state as any)?.from || '/';
 
   useEffect(() => {
     carregarMusica();
@@ -34,7 +38,8 @@ export function ModoPalcoPage() {
   };
 
   const sair = () => {
-    navigate(`/musica/${id}`);
+    // Voltar para a página de origem (home ou favoritos)
+    navigate(voltarPara);
   };
 
   if (carregando) return <Loading />;

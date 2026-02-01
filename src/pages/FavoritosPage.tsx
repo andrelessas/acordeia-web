@@ -8,17 +8,21 @@ import './FavoritosPage.css';
 export function FavoritosPage() {
   const [favoritos, setFavoritos] = useState<Musica[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState<string>('');
 
   useEffect(() => {
     carregarFavoritos();
   }, []);
 
   const carregarFavoritos = async () => {
+    setCarregando(true);
+    setErro('');
     try {
       const data = await favoritosService.listar();
       setFavoritos(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar favoritos:', error);
+      setErro(error.response?.data?.message || 'Erro ao carregar favoritos');
     } finally {
       setCarregando(false);
     }
@@ -32,7 +36,16 @@ export function FavoritosPage() {
         <h1>Favoritos</h1>
       </div>
 
-      {favoritos.length === 0 ? (
+      {erro && (
+        <div className="error-message">
+          {erro}
+          <button onClick={carregarFavoritos} className="btn btn-secondary" style={{ marginLeft: '1rem' }}>
+            Tentar novamente
+          </button>
+        </div>
+      )}
+
+      {favoritos.length === 0 && !erro && !carregando ? (
         <div className="empty-state">
           <span className="empty-state-icon">⭐</span>
           <h2 className="empty-state-title">Você ainda não tem músicas favoritas</h2>

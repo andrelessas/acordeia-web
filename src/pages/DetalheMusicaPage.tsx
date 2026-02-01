@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { musicasService } from '../services/musicasService';
 import { favoritosService } from '../services/favoritosService';
 import { MusicaDetalhada } from '../types/musica';
@@ -12,6 +12,7 @@ import './DetalheMusicaPage.css';
 export function DetalheMusicaPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { usuario } = useAuth();
   
   const [musica, setMusica] = useState<MusicaDetalhada | null>(null);
@@ -19,6 +20,9 @@ export function DetalheMusicaPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [favorita, setFavorita] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+
+  // Detectar de onde o usuário veio
+  const voltarPara = (location.state as any)?.from || '/';
 
   useEffect(() => {
     carregarMusica();
@@ -47,15 +51,22 @@ export function DetalheMusicaPage() {
   const toggleFavorito = async () => {
     if (!id) return;
     
+    const estadoAnterior = favorita;
+    
     try {
-      if (favorita) {
+      // Optimistic update
+      setFavorita(!favorita);
+      
+      if (estadoAnterior) {
         await favoritosService.remover(id);
       } else {
         await favoritosService.adicionar(id);
       }
-      setFavorita(!favorita);
     } catch (error) {
       console.error('Erro ao favoritar:', error);
+      // Reverter em caso de erro
+      setFavorita(estadoAnterior);
+      alert('Erro ao atualizar favorito. Tente novamente.');
     }
   };
 
@@ -86,7 +97,7 @@ export function DetalheMusicaPage() {
   return (
     <div className="detalhe-musica-container">
       <div className="detalhe-header">
-        <button onClick={() => navigate(-1)} className="btn-back">
+        <button onClick={() => navigate(voltarPara)} className="btn-back">
           ← Voltar
         </button>
         
@@ -121,6 +132,7 @@ export function DetalheMusicaPage() {
 
           <Link 
             to={`/modo-palco/${id}`}
+            state={{ from: voltarPara }}
             className="btn btn-secondary"
           >
             Modo Palco
