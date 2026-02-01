@@ -136,7 +136,7 @@ export function DetalheMusicaPage() {
 
       {modalAberto && (
         <ModalTransposicao
-          tomAtual={musica.tom}
+          tomAtual={musica.tomOriginal}
           tomOriginal={musica.tomOriginal}
           onSelecionar={handleSelecionarTom}
           onFechar={() => setModalAberto(false)}
