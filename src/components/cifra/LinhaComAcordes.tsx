@@ -1,18 +1,31 @@
-import { memo, useMemo } from 'react';
+import { useMemo } from 'react';
 import { LinhaComAcordes } from '../../types/musica';
 import './LinhaComAcordes.css';
 
 interface Props {
   linha: LinhaComAcordes;
+  exibirNumeroLinha?: boolean;
 }
 
-export const LinhaComAcordesComponent = memo(function LinhaComAcordesComponent({ linha }: Props) {
-  const { acordes, letra } = linha;
+export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: Props) {
+  const { acordes, letra, numeroLinha } = linha;
+
+  // Verificar se é uma linha completamente vazia (quebra de linha)
+  const isLinhaVazia = acordes.length === 0 && (!letra || letra.trim() === '');
+
+  // Verificar se é um solo (apenas acordes, sem letra)
+  const isSolo = acordes.length > 0 && (!letra || letra.trim() === '');
 
   const linhaAcordesRenderizada = useMemo(() => {
     if (acordes.length === 0) return null;
 
-    const chars = Array(Math.max(letra.length, 1)).fill('\u00A0');
+    // Calcular o tamanho necessário: máximo entre o tamanho da letra e a última posição de acorde
+    const ultimaPosicaoAcorde = acordes.length > 0 
+      ? Math.max(...acordes.map(a => a.posicao + a.acorde.length))
+      : 0;
+    const tamanhoLinha = Math.max(letra?.length || 0, ultimaPosicaoAcorde, 1);
+
+    const chars = Array(tamanhoLinha).fill('\u00A0');
     acordes.forEach(({ acorde, posicao }) => {
       acorde.split('').forEach((char, i) => {
         if (posicao + i < chars.length) {
@@ -22,16 +35,84 @@ export const LinhaComAcordesComponent = memo(function LinhaComAcordesComponent({
     });
 
     return chars.join('');
-  }, [acordes, letra.length]);
+  }, [acordes, letra]);
+
+  // Processar letra para destacar acordes entre colchetes
+  const renderizarLetra = useMemo(() => {
+    if (!letra) return '\u00A0';
+
+    const partes: JSX.Element[] = [];
+    const regex = /\[([^\]]+)\]/g;
+    let ultimoIndice = 0;
+    let match;
+    let key = 0;
+
+    while ((match = regex.exec(letra)) !== null) {
+      // Adicionar texto antes do acorde
+      if (match.index > ultimoIndice) {
+        partes.push(
+          <span key={`text-${key++}`}>
+            {letra.substring(ultimoIndice, match.index)}
+          </span>
+        );
+      }
+
+      // Adicionar acorde destacado (sem os colchetes)
+      partes.push(
+        <span key={`acorde-${key++}`} className="acorde-inline">
+          {match[1]}
+        </span>
+      );
+
+      ultimoIndice = match.index + match[0].length;
+    }
+
+    // Adicionar texto restante
+    if (ultimoIndice < letra.length) {
+      partes.push(
+        <span key={`text-${key++}`}>
+          {letra.substring(ultimoIndice)}
+        </span>
+      );
+    }
+
+    return partes.length > 0 ? partes : letra;
+  }, [letra]);
+
+  // Renderizar linha vazia (quebra de linha)
+  if (isLinhaVazia) {
+    return (
+      <div className={`linha-cifra linha-vazia ${exibirNumeroLinha ? 'com-numero' : ''}`}>
+        {exibirNumeroLinha && (
+          <div className="numero-linha" aria-label={`Linha ${numeroLinha}`}>
+            {numeroLinha}
+          </div>
+        )}
+        <div className="linha-conteudo">
+          <div className="linha-acordes">&nbsp;</div>
+          <div className="linha-letra">&nbsp;</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="linha-cifra">
-      <div className="linha-acordes" aria-label="acordes">
-        {linhaAcordesRenderizada || '\u00A0'}
-      </div>
-      <div className="linha-letra">
-        {letra || '\u00A0'}
+    <div className={`linha-cifra ${isSolo ? 'linha-solo' : ''} ${exibirNumeroLinha ? 'com-numero' : ''}`}>
+      {exibirNumeroLinha && (
+        <div className="numero-linha" aria-label={`Linha ${numeroLinha}`}>
+          {numeroLinha}
+        </div>
+      )}
+      <div className="linha-conteudo">
+        <div className="linha-acordes" aria-label="acordes">
+          {linhaAcordesRenderizada || '\u00A0'}
+        </div>
+        {!isSolo && (
+          <div className="linha-letra">
+            {renderizarLetra}
+          </div>
+        )}
       </div>
     </div>
   );
-});
+}

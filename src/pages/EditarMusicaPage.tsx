@@ -1,11 +1,13 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { musicasService } from '../services/musicasService';
+import { Loading } from '../components/comum/Loading';
 import './CadastroMusicaPage.css';
 
 const TONS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-export function CadastroMusicaPage() {
+export function EditarMusicaPage() {
+  const { id } = useParams<{ id: string }>();
   const [titulo, setTitulo] = useState('');
   const [artista, setArtista] = useState('');
   const [tom, setTom] = useState('C');
@@ -13,7 +15,8 @@ export function CadastroMusicaPage() {
   const [capotraste, setCapotraste] = useState(0);
   const [cifraTexto, setCifraTexto] = useState('');
   const [erro, setErro] = useState('');
-  const [carregando, setCarregando] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
 
   const navigate = useNavigate();
 
@@ -36,16 +39,67 @@ export function CadastroMusicaPage() {
     }
   };
 
+  useEffect(() => {
+    carregarMusica();
+  }, [id]);
+
+  const carregarMusica = async () => {
+    if (!id) return;
+    
+    setCarregando(true);
+    try {
+      const musica = await musicasService.buscarPorId(id);
+      
+      // Preencher formulário com dados existentes
+      setTitulo(musica.titulo);
+      setArtista(musica.artista);
+      setTom(musica.tomOriginal);
+      setTomOriginal(musica.tomOriginal);
+      setCapotraste(musica.capotraste || 0);
+      
+      // Reconstruir texto da cifra a partir das linhas
+      const textoReconstruido = reconstruirCifraTexto(musica.linhas);
+      setCifraTexto(textoReconstruido);
+    } catch (error: any) {
+      setErro(error.response?.data?.message || 'Erro ao carregar música');
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  const reconstruirCifraTexto = (linhas: any[]) => {
+    return linhas.map(linha => {
+      if (linha.acordes && linha.acordes.length > 0) {
+        // Criar linha de acordes posicionados
+        const linhaAcordes = Array(Math.max(linha.letra?.length || 0, 80)).fill(' ');
+        linha.acordes.forEach((item: any) => {
+          const acorde = item.acorde;
+          const pos = item.posicao;
+          for (let i = 0; i < acorde.length; i++) {
+            if (pos + i < linhaAcordes.length) {
+              linhaAcordes[pos + i] = acorde[i];
+            }
+          }
+        });
+        return linhaAcordes.join('').trimEnd() + '\n' + (linha.letra || '');
+      }
+      return linha.letra || '';
+    }).join('\n');
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!id) return;
+    
     setErro('');
-    setCarregando(true);
+    setSalvando(true);
 
     try {
       // Processar cifra texto para formato de linhas
       const linhasProcessadas = processarCifra(cifraTexto);
       
-      const musica = await musicasService.criar({
+      await musicasService.atualizar(id, {
         titulo,
         artista,
         tom,
@@ -55,11 +109,12 @@ export function CadastroMusicaPage() {
         capotraste,
         conteudoCifra: cifraTexto,
       });
-      navigate(`/musica/${musica.id}`);
+      
+      navigate(`/musica/${id}`);
     } catch (error: any) {
-      setErro(error.response?.data?.message || error.message || 'Erro ao cadastrar música');
+      setErro(error.response?.data?.message || error.message || 'Erro ao atualizar música');
     } finally {
-      setCarregando(false);
+      setSalvando(false);
     }
   };
 
@@ -112,11 +167,13 @@ export function CadastroMusicaPage() {
     return resultado;
   };
 
+  if (carregando) return <Loading />;
+
   return (
     <div className="cadastro-musica-container">
       <div className="cadastro-header">
-        <h1>Nova Música</h1>
-        <button onClick={() => navigate(-1)} className="btn btn-secondary">
+        <h1>Editar Música</h1>
+        <button onClick={() => navigate(`/musica/${id}`)} className="btn btn-secondary">
           Cancelar
         </button>
       </div>
@@ -176,7 +233,6 @@ export function CadastroMusicaPage() {
               max="12"
               value={capotraste}
               onChange={(e) => setCapotraste(Number(e.target.value))}
-              placeholder="0"
             />
           </div>
         </div>
@@ -197,8 +253,7 @@ export function CadastroMusicaPage() {
           <label htmlFor="cifraTexto">
             Cifra *
             <span className="label-help">
-              Cole o texto da cifra com acordes em uma linha e letra na linha seguinte.
-              Exemplo: G D (acordes) / Quando eu não sei pra onde ir (letra)
+              Edite o texto da cifra. Os acordes serão processados automaticamente.
             </span>
           </label>
           <textarea
@@ -206,7 +261,7 @@ export function CadastroMusicaPage() {
             value={cifraTexto}
             onChange={(e) => setCifraTexto(e.target.value)}
             onKeyDown={handleTabKey}
-            placeholder="Cole aqui o texto da cifra..."
+            placeholder="Cole ou edite o texto da cifra..."
             rows={20}
             required
           />
@@ -216,9 +271,9 @@ export function CadastroMusicaPage() {
           <button 
             type="submit" 
             className="btn btn-primary"
-            disabled={carregando}
+            disabled={salvando}
           >
-            {carregando ? 'Salvando...' : 'Salvar Música'}
+            {salvando ? 'Salvando...' : 'Salvar Alterações'}
           </button>
         </div>
       </form>

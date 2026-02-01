@@ -1,5 +1,5 @@
 import api from './api';
-import { Musica, MusicaDetalhada, CriarMusicaDTO, RespostaPaginada } from '../types/musica';
+import { Musica, MusicaDetalhada, CriarMusicaDTO, AtualizarMusicaDTO, RespostaPaginada } from '../types/musica';
 
 export const musicasService = {
   async listar(): Promise<Musica[]> {
@@ -25,5 +25,10 @@ export const musicasService = {
 
   async excluir(id: string): Promise<void> {
     await api.delete(`/Musicas/${id}`);
+  },
+
+  async atualizar(id: string, musica: AtualizarMusicaDTO): Promise<Musica> {
+    const { data } = await api.put(`/Musicas/${id}`, musica);
+    return data;
   },
 };

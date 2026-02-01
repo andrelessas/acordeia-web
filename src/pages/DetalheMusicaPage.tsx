@@ -112,6 +112,14 @@ export function DetalheMusicaPage() {
           </button>
 
           <Link 
+            to={`/editar-musica/${id}`}
+            className="btn btn-secondary"
+            title="Editar cifra"
+          >
+            ✏️ Editar
+          </Link>
+
+          <Link 
             to={`/modo-palco/${id}`}
             className="btn btn-secondary"
           >
@@ -132,7 +140,10 @@ export function DetalheMusicaPage() {
         </div>
       </div>
 
-      <CifraViewer linhas={musica.linhas} />
+      <CifraViewer 
+        linhas={musica.linhas} 
+        exibirNumeroLinha={usuario?.isAdmin || false}
+      />
 
       {modalAberto && (
         <ModalTransposicao

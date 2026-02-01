@@ -5,8 +5,48 @@
   border-radius: var(--border-radius-sm);
 }
 
+/* Layout com número da linha */
+.linha-cifra.com-numero {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+}
+
+.numero-linha {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+  min-width: 32px;
+  text-align: right;
+  padding-top: 2px;
+  user-select: none;
+  opacity: 0.6;
+}
+
+.linha-conteudo {
+  flex: 1;
+  min-width: 0;
+}
+
 .linha-cifra:hover {
   background: var(--color-surface);
+}
+
+/* Linha vazia (quebra de linha) */
+.linha-cifra.linha-vazia {
+  min-height: 0.8em;
+  margin-bottom: var(--space-4);
+  padding: 0;
+}
+
+.linha-cifra.linha-vazia:hover {
+  background: transparent;
+}
+
+.linha-cifra.linha-vazia .linha-acordes,
+.linha-cifra.linha-vazia .linha-letra {
+  display: none;
 }
 
 .linha-acordes {
@@ -30,6 +70,42 @@
   white-space: pre;
   letter-spacing: var(--letter-spacing-normal);
   user-select: all;
+}
+
+/* Acordes inline (entre colchetes) */
+.acorde-inline {
+  color: var(--color-acorde);
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 0 8px var(--color-acorde-glow);
+  padding: 0 2px;
+  background: var(--color-acorde-bg);
+  border-radius: 3px;
+}
+
+/* Linha solo - apenas acordes sem letra (instrumental/solo) */
+.linha-solo {
+  margin-bottom: var(--space-3);
+}
+
+.linha-solo .linha-acordes {
+  font-size: calc(var(--cifra-acorde-size) * 1.1);
+  padding: var(--space-2) 0;
+  background: var(--color-acorde-bg);
+  border-left: 3px solid var(--color-acorde);
+  padding-left: var(--space-3);
+  border-radius: var(--border-radius-sm);
+}
+
+/* Solo em modo palco */
+.modo-palco .linha-solo {
+  margin-bottom: var(--space-4);
+}
+
+.modo-palco .linha-solo .linha-acordes {
+  font-size: calc(var(--stage-acorde-size) * 1.15);
+  padding: var(--space-3) 0;
+  padding-left: var(--space-4);
+  border-left-width: 4px;
 }
 
 .modo-palco .linha-cifra {

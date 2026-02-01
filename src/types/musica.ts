@@ -22,6 +22,7 @@ export interface AcordeNaLinha {
 }
 
 export interface LinhaComAcordes {
+  numeroLinha: number;
   acordes: AcordeNaLinha[];
   letra: string;
 }
@@ -32,6 +33,17 @@ export interface MusicaDetalhada extends Musica {
 }
 
 export interface CriarMusicaDTO {
+  titulo: string;
+  artista: string;
+  tom: string;
+  tomOriginal: string;
+  linhas: LinhaComAcordes[];
+  nomeArtista: string;
+  capotraste: number;
+  conteudoCifra: string;
+}
+
+export interface AtualizarMusicaDTO {
   titulo: string;
   artista: string;
   tom: string;

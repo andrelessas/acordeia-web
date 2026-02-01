@@ -6,6 +6,7 @@ import { Cadastro } from './pages/Cadastro';
 import { Home } from './pages/Home';
 import { DetalheMusicaPage } from './pages/DetalheMusicaPage';
 import { CadastroMusicaPage } from './pages/CadastroMusicaPage';
+import { EditarMusicaPage } from './pages/EditarMusicaPage';
 import { FavoritosPage } from './pages/FavoritosPage';
 import { ModoPalcoPage } from './pages/ModoPalcoPage';
 import { Loading } from './components/comum/Loading';
@@ -35,6 +36,7 @@ export function App() {
             <Route path="/" element={<Home />} />
             <Route path="/musica/:id" element={<DetalheMusicaPage />} />
             <Route path="/cadastrar-musica" element={<CadastroMusicaPage />} />
+            <Route path="/editar-musica/:id" element={<EditarMusicaPage />} />
             <Route path="/favoritos" element={<FavoritosPage />} />
           </Route>
 
