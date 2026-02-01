@@ -37,18 +37,19 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
     return chars.join('');
   }, [acordes, letra]);
 
-  // Processar letra para destacar acordes entre colchetes
+  // Processar letra para destacar acordes entre colchetes e parênteses
   const renderizarLetra = useMemo(() => {
     if (!letra) return '\u00A0';
 
     const partes: JSX.Element[] = [];
-    const regex = /\[([^\]]+)\]/g;
+    // Regex combinado para detectar [acordes] e (notas/observações)
+    const regex = /\[([^\]]+)\]|\(([^)]+)\)/g;
     let ultimoIndice = 0;
     let match;
     let key = 0;
 
     while ((match = regex.exec(letra)) !== null) {
-      // Adicionar texto antes do acorde
+      // Adicionar texto antes do acorde/nota
       if (match.index > ultimoIndice) {
         partes.push(
           <span key={`text-${key++}`}>
@@ -57,12 +58,22 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
         );
       }
 
-      // Adicionar acorde destacado (sem os colchetes)
-      partes.push(
-        <span key={`acorde-${key++}`} className="acorde-inline">
-          {match[1]}
-        </span>
-      );
+      // Verificar se é [acorde] ou (nota)
+      if (match[1]) {
+        // Acorde entre colchetes (sem os colchetes)
+        partes.push(
+          <span key={`acorde-${key++}`} className="acorde-inline">
+            {match[1]}
+          </span>
+        );
+      } else if (match[2]) {
+        // Texto entre parênteses (mantém os parênteses)
+        partes.push(
+          <span key={`parentese-${key++}`} className="acorde-inline">
+            ({match[2]})
+          </span>
+        );
+      }
 
       ultimoIndice = match.index + match[0].length;
     }

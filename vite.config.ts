@@ -21,6 +21,9 @@ export default defineConfig({
     },
     
     chunkSizeWarningLimit: 500,
+    
+    // Copiar arquivos da pasta public para dist
+    copyPublicDir: true,
   },
   
   server: {
