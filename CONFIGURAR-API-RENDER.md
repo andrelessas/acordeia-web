@@ -1,168 +1,131 @@
-# 🔧 Configurar URL da API no Render
+# 🔧 Configurar URL da API - Solução Genérica
 
-## ❌ Problema Atual
+## ✅ Solução Implementada
 
-O frontend está tentando acessar:
-```
-https://acordeia-web.onrender.com/musica/6a03fb2d-3acb-4ea5-92c7-d615e5f44cdf
-```
+O sistema agora usa uma abordagem **genérica** com 3 níveis de configuração:
 
-**Erro:** 404 Not Found
+### **Prioridade (ordem de verificação):**
 
-**Causa:** A variável `VITE_API_URL` não está configurada no Render, então o frontend está tentando buscar dados no próprio domínio ao invés de chamar a API backend.
-
----
-
-## ✅ Solução
-
-### Passo 1: Identificar a URL da sua API
-
-Primeiro, você precisa saber qual é a URL do seu **backend** no Render.
-
-**Exemplos:**
-- `https://acordeia-api.onrender.com`
-- `https://acordeia-backend.onrender.com`
-- `https://seu-backend-api.onrender.com`
-
-> ⚠️ **Importante:** A URL deve ser do **backend/API**, NÃO do frontend!
+1. **config.js** (runtime - pode modificar SEM rebuild) 🎯 **Recomendado**
+2. **VITE_API_URL** (build time - requer rebuild)
+3. **localhost:5000** (fallback desenvolvimento)
 
 ---
 
-### Passo 2: Configurar no Painel do Render
+## 🎯 Opção 1: Configurar config.js (SEM rebuild)
 
-1. **Acesse o Dashboard do Render:**
-   - URL: https://dashboard.render.com
+**Vantagem:** Pode modificar a URL da API **sem precisar fazer rebuild**!
 
-2. **Selecione o serviço do frontend:**
-   - Procure por: `acordeia-web` (ou nome que você deu)
+### **Após o primeiro deploy:**
 
-3. **Vá em Environment:**
-   - Menu lateral esquerdo → **Environment**
-
-4. **Adicione a variável de ambiente:**
-   - Clique em **"Add Environment Variable"**
-   - **Key (Nome):** `VITE_API_URL`
-   - **Value (Valor):** `https://SEU-BACKEND.onrender.com/api`
-   
-   **Exemplo real:**
-   ```
-   VITE_API_URL=https://acordeia-api.onrender.com/api
+1. **Acesse o servidor via SSH/Shell** (no Render, use o Web Shell)
+2. **Edite o arquivo:**
+   ```bash
+   nano dist/config.js
+   # ou use o editor que preferir
    ```
 
-5. **Salvar:**
-   - Clique em **"Save Changes"**
-
-6. **Deploy automático:**
-   - O Render detectará a mudança e fará **rebuild automático**
-   - Aguarde o build finalizar (2-5 minutos)
-
----
-
-### Passo 3: Verificar se funcionou
-
-Após o rebuild:
-
-1. **Abra o DevTools do navegador:**
-   - Pressione `F12`
-
-2. **Vá na aba Network:**
-   - Network → XHR/Fetch
-
-3. **Acesse uma música:**
-   - Vá em: `https://acordeia-web.onrender.com/`
-   - Clique em uma música
-
-4. **Verifique a requisição:**
-   - Deve aparecer algo como:
-   ```
-   GET https://acordeia-api.onrender.com/api/Musicas/6a03fb2d-...
-   Status: 200 OK
+3. **Modifique a configuração:**
+   ```javascript
+   window.APP_CONFIG = {
+     API_URL: 'https://acordeia-api.onrender.com/api',
+   };
    ```
 
-   ✅ **Se o status for 200:** Funcionou!
-   ❌ **Se ainda for 404:** Verifique os passos abaixo
+4. **Salve o arquivo**
+5. **Teste imediatamente** (sem rebuild!)
 
 ---
 
-## 🔍 Troubleshooting
+## 🎯 Opção 2: Configurar no .env.production (COM rebuild)
 
-### Erro: Ainda retorna 404
+**Vantagem:** Fica versionado no Git
 
-**Possíveis causas:**
+### **No arquivo `.env.production`:**
 
-1. **URL da API incorreta:**
-   - Verifique se digitou a URL correta
-   - Deve terminar com `/api` (minúsculo)
-   - Exemplo correto: `https://acordeia-api.onrender.com/api`
-
-2. **Backend não está rodando:**
-   - Acesse diretamente a URL da API no navegador
-   - Exemplo: `https://acordeia-api.onrender.com/api/Musicas`
-   - Deve retornar dados JSON
-
-3. **CORS não configurado no backend:**
-   - O backend deve permitir requisições do domínio do frontend
-   - Configurar CORS para aceitar: `https://acordeia-web.onrender.com`
-
-4. **Cache do navegador:**
-   - Limpe o cache: `Ctrl + Shift + Delete`
-   - Ou abra em modo anônimo: `Ctrl + Shift + N`
-
----
-
-## 📋 Checklist Final
-
-- [ ] Identifiquei a URL do meu backend
-- [ ] Acessei o Dashboard do Render
-- [ ] Selecionei o serviço `acordeia-web`
-- [ ] Adicionei a variável `VITE_API_URL`
-- [ ] Valor configurado: `https://MEU-BACKEND.onrender.com/api`
-- [ ] Cliquei em "Save Changes"
-- [ ] Aguardei o rebuild finalizar
-- [ ] Testei acessar uma música
-- [ ] Abri o DevTools (F12) → Network
-- [ ] Requisição está indo para o backend correto
-- [ ] Status da requisição é 200 OK
-- [ ] ✅ Músicas carregam corretamente
-
----
-
-## 💡 Verificação Rápida
-
-**Como saber se está funcionando:**
-
-### Antes da configuração:
-```
-❌ GET https://acordeia-web.onrender.com/musica/123
-   Status: 404 Not Found
+```env
+VITE_API_URL=https://acordeia-api.onrender.com/api
 ```
 
-### Depois da configuração:
+### **Fazer commit:**
+```bash
+git add .env.production
+git commit -m "config: adicionar URL da API"
+git push origin main
 ```
-✅ GET https://acordeia-api.onrender.com/api/Musicas/123
-   Status: 200 OK
-   Response: { "id": "123", "titulo": "...", ... }
-```
+
+O Render fará rebuild automático.
 
 ---
 
-## 🎯 Resumo
+## 🎯 Opção 3: Configurar no Render (COM rebuild)
 
-**O que precisa fazer:**
+**Vantagem:** Não expõe a URL no código
 
-1. Descobrir a URL do seu backend
-2. Adicionar `VITE_API_URL` no Render (Environment)
-3. Aguardar rebuild
-4. Testar
-
-**Tempo estimado:** 5-10 minutos
+1. **Dashboard do Render** → `acordeia-web`
+2. **Environment** → Add Environment Variable
+3. **Adicione:**
+   ```
+   VITE_API_URL = https://acordeia-api.onrender.com/api
+   ```
+4. **Save Changes**
+5. Aguarde rebuild
 
 ---
 
-## ❓ Precisa de Ajuda?
+## 🔍 Como Verificar se Está Funcionando
 
-Se ainda não funcionar, me envie:
-1. URL do seu frontend (acordeia-web)
-2. URL do seu backend (API)
-3. Screenshot do painel Environment do Render
-4. Screenshot do DevTools → Network ao acessar uma música
+Abra o **Console do navegador** (F12):
+
+```
+🔌 API URL: https://acordeia-api.onrender.com/api
+```
+
+Se aparecer essa mensagem, está configurado corretamente! ✅
+
+---
+
+## 💡 Qual opção escolher?
+
+| Situação | Recomendação |
+|----------|-------------|
+| **Desenvolvimento local** | Não precisa configurar (usa localhost:5000) |
+| **Primeiro deploy** | Use Opção 2 (.env.production) |
+| **Já está no ar e quer mudar API** | Use Opção 1 (config.js sem rebuild) |
+| **Quer manter URL secreta** | Use Opção 3 (Render Environment) |
+
+---
+
+## 📝 Resumo
+
+✅ **Genérico**: Funciona em qualquer plataforma (Render, Vercel, Netlify, etc)  
+✅ **Flexível**: 3 formas diferentes de configurar  
+✅ **Sem hardcode**: Nenhuma validação de domínio específico  
+✅ **Runtime config**: Pode mudar sem rebuild (Opção 1)  
+
+---
+
+## 🐛 Troubleshooting
+
+### URL errada no console?
+
+Verifique a ordem de prioridade:
+1. Abra `dist/config.js` → se tiver URL, é essa que será usada
+2. Se não, verifica `VITE_API_URL` no build
+3. Se não, usa `localhost:5000`
+
+### Como resetar para padrão?
+
+**Opção 1:**
+```javascript
+// dist/config.js
+window.APP_CONFIG = {
+  API_URL: '', // Vazio = usa VITE_API_URL
+};
+```
+
+**Opção 2:**
+```bash
+# Remover variável de ambiente
+rm .env.production
+```

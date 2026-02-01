@@ -1,7 +1,28 @@
 import axios from 'axios';
 
+// Obter URL da API de forma genérica
+const getApiUrl = (): string => {
+  // 1. Verificar configuração em runtime (pode ser modificada sem rebuild)
+  const runtimeConfig = (window as any).APP_CONFIG?.API_URL;
+  if (runtimeConfig) {
+    return runtimeConfig;
+  }
+  
+  // 2. Usar variável de ambiente do build
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // 3. Fallback: desenvolvimento local
+  return 'http://localhost:5000/api';
+};
+
+const baseURL = getApiUrl();
+
+console.log('🔌 API URL:', baseURL);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
