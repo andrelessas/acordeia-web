@@ -2,7 +2,10 @@
   padding: var(--space-4);
   background: var(--color-background-subtle);
   border-radius: var(--border-radius-lg);
-  overflow-x: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+  word-wrap: break-word;
   -webkit-overflow-scrolling: touch;
 }
 

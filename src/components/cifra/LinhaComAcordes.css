@@ -55,7 +55,9 @@
   color: var(--color-acorde);
   font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
-  white-space: pre;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   letter-spacing: var(--letter-spacing-normal);
   min-height: 1.4em;
   user-select: all;
@@ -67,7 +69,9 @@
   font-size: var(--cifra-letra-size);
   color: var(--color-letra);
   line-height: var(--cifra-line-height);
-  white-space: pre;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   letter-spacing: var(--letter-spacing-normal);
   user-select: all;
 }
