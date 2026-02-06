@@ -37,13 +37,80 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
     return chars.join('');
   }, [acordes, letra]);
 
-  // Processar letra para destacar acordes entre colchetes e parênteses
+  // Processar letra para destacar acordes entre colchetes, parênteses e texto em caixa alta
   const renderizarLetra = useMemo(() => {
     if (!letra) return '\u00A0';
 
+    // Verificar se é uma linha de seção com acordes (ex: "INTRO: C#m B/D# A F#m")
+    const linhaSecaoComAcordes = /^([A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ\s]+):\s*(.+)$/;
+    const matchSecao = letra.match(linhaSecaoComAcordes);
+    
+    if (matchSecao) {
+      const [, secao, acordesTexto] = matchSecao;
+      // Regex para identificar acordes: padrões como C, C#, Cm, C#m, C/G, etc.
+      const regexAcordes = /([A-G][#b]?(?:m|maj|dim|aug|sus|add)?(?:\d+)?(?:\/[A-G][#b]?)?)/g;
+      const partesAcordes: JSX.Element[] = [];
+      let ultimoIndice = 0;
+      let match;
+      let key = 0;
+
+      // Processar acordes
+      while ((match = regexAcordes.exec(acordesTexto)) !== null) {
+        // Adicionar espaços antes do acorde
+        if (match.index > ultimoIndice) {
+          partesAcordes.push(
+            <span key={`space-${key++}`}>
+              {acordesTexto.substring(ultimoIndice, match.index)}
+            </span>
+          );
+        }
+
+        // Adicionar acorde destacado
+        partesAcordes.push(
+          <span key={`acorde-${key++}`} className="acorde-inline">
+            {match[1]}
+          </span>
+        );
+
+        ultimoIndice = match.index + match[0].length;
+      }
+
+      // Adicionar texto restante após acordes
+      if (ultimoIndice < acordesTexto.length) {
+        partesAcordes.push(
+          <span key={`rest-${key++}`}>
+            {acordesTexto.substring(ultimoIndice)}
+          </span>
+        );
+      }
+
+      return (
+        <>
+          <span className="acorde-inline">{secao}:</span>
+          {' '}
+          {partesAcordes}
+        </>
+      );
+    }
+
+    // Verificar se a linha inteira é uma seção (ex: "REFRÃO", "SOLO")
+    const isLinhaSecao = /^[A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ\s:]+$/.test(letra.trim());
+    
+    if (isLinhaSecao && letra.trim() === letra.trim().toUpperCase()) {
+      return (
+        <span className="acorde-inline">
+          {letra}
+        </span>
+      );
+    }
+
     const partes: JSX.Element[] = [];
-    // Regex combinado para detectar [acordes] e (notas/observações)
-    const regex = /\[([^\]]+)\]|\(([^)]+)\)/g;
+    // Regex combinado para detectar APENAS:
+    // 1. [acordes] - texto entre colchetes
+    // 2. (notas/observações) - texto entre parênteses
+    // 3. Palavras em caixa alta (2+ letras maiúsculas consecutivas)
+    // Não detecta acordes soltos no meio do texto para evitar falsos positivos (E, A, etc.)
+    const regex = /\[([^\]]+)\]|\(([^)]+)\)|([A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ]{2,}(?:\s+[A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ]{2,})*)/g;
     let ultimoIndice = 0;
     let match;
     let key = 0;
@@ -58,7 +125,7 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
         );
       }
 
-      // Verificar se é [acorde] ou (nota)
+      // Verificar se é [acorde], (nota) ou TEXTO EM CAIXA ALTA
       if (match[1]) {
         // Acorde entre colchetes (sem os colchetes)
         partes.push(
@@ -71,6 +138,13 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
         partes.push(
           <span key={`parentese-${key++}`} className="acorde-inline">
             ({match[2]})
+          </span>
+        );
+      } else if (match[3]) {
+        // Texto em caixa alta (2+ letras)
+        partes.push(
+          <span key={`caixa-alta-${key++}`} className="acorde-inline">
+            {match[3]}
           </span>
         );
       }

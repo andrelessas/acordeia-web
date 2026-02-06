@@ -7,6 +7,7 @@ import { CifraViewer } from '../components/cifra/CifraViewer';
 import { ModalTransposicao } from '../components/cifra/ModalTransposicao';
 import { Loading } from '../components/comum/Loading';
 import { useAuth } from '../context/AuthContext';
+import { useWakeLock } from '../hooks/useWakeLock';
 import './DetalheMusicaPage.css';
 
 export function DetalheMusicaPage() {
@@ -20,6 +21,9 @@ export function DetalheMusicaPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [favorita, setFavorita] = useState(false);
   const [excluindo, setExcluindo] = useState(false);
+
+  // Ativar Wake Lock para manter tela ativa
+  useWakeLock(true);
 
   // Detectar de onde o usuário veio
   const voltarPara = (location.state as any)?.from || '/';
@@ -122,32 +126,37 @@ export function DetalheMusicaPage() {
             {favorita ? '★' : '☆'}
           </button>
 
-          <Link 
-            to={`/editar-musica/${id}`}
-            className="btn btn-secondary"
-            title="Editar cifra"
-          >
-            ✏️ Editar
-          </Link>
+          {/* Botões apenas para usuários autenticados */}
+          {usuario && (
+            <>
+              <Link 
+                to={`/editar-musica/${id}`}
+                className="btn btn-secondary"
+                title="Editar cifra"
+              >
+                ✏️ Editar
+              </Link>
 
-          <Link 
-            to={`/modo-palco/${id}`}
-            state={{ from: voltarPara }}
-            className="btn btn-secondary"
-          >
-            Modo Palco
-          </Link>
+              <Link 
+                to={`/modo-palco/${id}`}
+                state={{ from: voltarPara }}
+                className="btn btn-secondary"
+              >
+                Modo Palco
+              </Link>
 
-          {/* Botão de excluir - apenas para administradores */}
-          {usuario?.isAdmin && (
-            <button 
-              onClick={handleExcluir}
-              disabled={excluindo}
-              className="btn btn-danger"
-              title="Excluir música"
-            >
-              {excluindo ? 'Excluindo...' : '🗑️ Excluir'}
-            </button>
+              {/* Botão de excluir - apenas para administradores */}
+              {usuario.isAdmin && (
+                <button 
+                  onClick={handleExcluir}
+                  disabled={excluindo}
+                  className="btn btn-danger"
+                  title="Excluir música"
+                >
+                  {excluindo ? 'Excluindo...' : '🗑️ Excluir'}
+                </button>
+              )}
+            </>
           )}
         </div>
       </div>

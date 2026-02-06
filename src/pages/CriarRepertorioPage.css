@@ -1,0 +1,255 @@
+.criar-repertorio-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.page-header h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: 0;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  font-size: var(--font-size-base);
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: var(--space-2);
+  transition: all var(--transition);
+}
+
+.btn-back:hover {
+  transform: translateX(-4px);
+}
+
+.repertorio-form {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-6);
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.form-group input {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-base);
+  transition: all var(--transition);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-group-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.form-group-checkbox input[type="checkbox"] {
+  margin-top: 4px;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.form-group-checkbox label {
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.label-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+.musicas-section {
+  margin-bottom: var(--space-6);
+}
+
+.musicas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.musicas-header h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.empty-musicas {
+  text-align: center;
+  padding: var(--space-8);
+  color: var(--color-text-secondary);
+  background: var(--color-background);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--border-radius-md);
+}
+
+.musicas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.musica-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition);
+}
+
+.musica-item:hover {
+  border-color: var(--color-primary);
+}
+
+.musica-ordem {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  min-width: 24px;
+}
+
+.musica-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  overflow: hidden;
+}
+
+.musica-titulo {
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.musica-artista {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1);
+  font-size: 16px;
+  transition: transform var(--transition);
+}
+
+.btn-remove:hover {
+  transform: scale(1.2);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+/* Modal de músicas */
+.modal-musicas-lista {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.modal-musica-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.modal-musica-item:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+}
+
+.modal-musica-item.selected {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.modal-musica-item.selected .musica-artista {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.modal-musica-item input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .page-header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .repertorio-form {
+    padding: var(--space-4);
+  }
+
+  .musicas-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}

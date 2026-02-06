@@ -12,14 +12,27 @@ export function Header() {
 
         <nav className="nav">
           <Link to="/">Músicas</Link>
-          <Link to="/favoritos">Favoritos</Link>
+          {usuario && (
+            <>
+              <Link to="/favoritos">Favoritos</Link>
+              <Link to="/repertorios">Repertórios</Link>
+            </>
+          )}
         </nav>
 
         <div className="header-user">
-          <span>{usuario?.nome}</span>
-          <button onClick={logout} className="btn-logout">
-            Sair
-          </button>
+          {usuario ? (
+            <>
+              <span>{usuario.nome}</span>
+              <button onClick={logout} className="btn-logout">
+                Sair
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="btn btn-primary btn-sm">
+              Entrar
+            </Link>
+          )}
         </div>
       </div>
     </header>

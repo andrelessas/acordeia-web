@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { ErrorMessage } from '../components/comum/ErrorMessage';
 import './Login.css';
 
 export function Cadastro() {
@@ -34,10 +35,16 @@ export function Cadastro() {
       await registrar(nome, email, senha);
       navigate('/');
     } catch (error: any) {
-      setErro(error.message || 'Erro ao criar conta');
+      // Extrair mensagem de erro da API no formato { mensagem: "..." }
+      const mensagem = error.response?.data?.mensagem || error.message || 'Erro ao criar conta';
+      setErro(mensagem);
     } finally {
       setCarregando(false);
     }
+  };
+
+  const handleInputChange = () => {
+    setErro(''); // Limpar erro ao digitar
   };
 
   return (
@@ -49,7 +56,7 @@ export function Cadastro() {
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
-          {erro && <div className="error-message">{erro}</div>}
+          {erro && <ErrorMessage mensagem={erro} onDismiss={() => setErro('')} />}
           
           <div className="form-group">
             <label htmlFor="nome">Nome</label>
@@ -57,7 +64,10 @@ export function Cadastro() {
               id="nome"
               type="text"
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              onChange={(e) => {
+                setNome(e.target.value);
+                handleInputChange();
+              }}
               placeholder="Seu nome"
               required
             />
@@ -69,7 +79,10 @@ export function Cadastro() {
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                handleInputChange();
+              }}
               placeholder="seu@email.com"
               required
             />
@@ -81,7 +94,10 @@ export function Cadastro() {
               id="senha"
               type="password"
               value={senha}
-              onChange={(e) => setSenha(e.target.value)}
+              onChange={(e) => {
+                setSenha(e.target.value);
+                handleInputChange();
+              }}
               placeholder="Mínimo 6 caracteres"
               required
             />
@@ -93,7 +109,10 @@ export function Cadastro() {
               id="confirmarSenha"
               type="password"
               value={confirmarSenha}
-              onChange={(e) => setConfirmarSenha(e.target.value)}
+              onChange={(e) => {
+                setConfirmarSenha(e.target.value);
+                handleInputChange();
+              }}
               placeholder="Digite a senha novamente"
               required
             />

@@ -5,12 +5,14 @@ import { Musica } from '../types/musica';
 import { CardMusica } from '../components/musica/CardMusica';
 import { Loading } from '../components/comum/Loading';
 import { useDebounce } from '../hooks/useDebounce';
+import { useAuth } from '../context/AuthContext';
 import './Home.css';
 
 export function Home() {
   const [musicas, setMusicas] = useState<Musica[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [termoBusca, setTermoBusca] = useState('');
+  const { usuario } = useAuth();
   
   const termoBuscaDebounced = useDebounce(termoBusca, 300);
 
@@ -55,10 +57,12 @@ export function Home() {
   return (
     <div className="home-container">
       <header className="home-header">
-        <h1>Minhas Músicas</h1>
-        <Link to="/cadastrar-musica" className="btn btn-primary">
-          + Nova Música
-        </Link>
+        <h1>Músicas</h1>
+        {usuario && (
+          <Link to="/cadastrar-musica" className="btn btn-primary">
+            + Nova Música
+          </Link>
+        )}
       </header>
 
       <div className="search-container">
@@ -81,10 +85,12 @@ export function Home() {
           <p className="empty-state-description">
             {termoBusca 
               ? 'Tente buscar por outro termo'
-              : 'Comece adicionando sua primeira cifra'
+              : usuario 
+                ? 'Comece adicionando sua primeira cifra' 
+                : 'Ainda não há músicas cadastradas'
             }
           </p>
-          {!termoBusca && (
+          {!termoBusca && usuario && (
             <Link to="/cadastrar-musica" className="btn btn-primary">
               Cadastrar música
             </Link>
