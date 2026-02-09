@@ -19,8 +19,6 @@ const getApiUrl = (): string => {
 
 const baseURL = getApiUrl();
 
-console.log('🔌 API URL:', baseURL);
-
 const api = axios.create({
   baseURL,
   headers: {
