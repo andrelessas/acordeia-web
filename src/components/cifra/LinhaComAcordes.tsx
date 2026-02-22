@@ -7,6 +7,13 @@ interface Props {
   exibirNumeroLinha?: boolean;
 }
 
+// Token: representa uma palavra (ou espaço) com seus acordes
+interface Token {
+  type: 'word' | 'space';
+  text: string;
+  acordes: Array<{ acorde: string; offset: number }>; // offset relativo ao token
+}
+
 export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: Props) {
   const { acordes, letra, numeroLinha } = linha;
 
@@ -16,32 +23,48 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
   // Verificar se é um solo (apenas acordes, sem letra)
   const isSolo = acordes.length > 0 && (!letra || letra.trim() === '');
 
-  const linhaAcordesRenderizada = useMemo(() => {
-    if (acordes.length === 0) return null;
+  /**
+   * ESTRATÉGIA: Tokenização por palavra
+   * Divide a linha em tokens (palavras + espaços), associando acordes a cada token.
+   * Isso garante que a quebra de linha aconteça ENTRE palavras, nunca dentro delas.
+   */
+  const tokens = useMemo((): Token[] => {
+    if (!letra || isSolo) return [];
 
-    // Calcular o tamanho necessário: máximo entre o tamanho da letra e a última posição de acorde
-    const ultimaPosicaoAcorde = acordes.length > 0 
-      ? Math.max(...acordes.map(a => a.posicao + a.acorde.length))
-      : 0;
-    const tamanhoLinha = Math.max(letra?.length || 0, ultimaPosicaoAcorde, 1);
+    const result: Token[] = [];
+    
+    // Regex para capturar palavras e espaços separadamente
+    const regex = /(\S+)|(\s+)/g;
+    let match;
 
-    const chars = Array(tamanhoLinha).fill('\u00A0');
-    acordes.forEach(({ acorde, posicao }) => {
-      acorde.split('').forEach((char, i) => {
-        if (posicao + i < chars.length) {
-          chars[posicao + i] = char;
-        }
-      });
-    });
+    while ((match = regex.exec(letra)) !== null) {
+      const text = match[0];
+      const startPos = match.index;
+      const endPos = startPos + text.length;
+      
+      // Determinar tipo do token
+      const type = match[1] ? 'word' : 'space';
+      
+      // Encontrar acordes que pertencem a este token
+      const tokenAcordes = acordes
+        .filter(a => a.posicao >= startPos && a.posicao < endPos)
+        .map(a => ({
+          acorde: a.acorde,
+          offset: a.posicao - startPos // posição relativa dentro do token
+        }));
 
-    return chars.join('');
-  }, [acordes, letra]);
+      result.push({ type, text, acordes: tokenAcordes });
+    }
+
+    return result;
+  }, [acordes, letra, isSolo]);
 
   // Processar letra para destacar acordes entre colchetes, parênteses e texto em caixa alta
   const renderizarLetra = useMemo(() => {
     if (!letra) return '\u00A0';
 
     // Verificar se é uma linha de seção com acordes (ex: "INTRO: C#m B/D# A F#m")
+    // Essas linhas NÃO devem quebrar - scroll horizontal se necessário
     const linhaSecaoComAcordes = /^([A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ\s]+):\s*(.+)$/;
     const matchSecao = letra.match(linhaSecaoComAcordes);
     
@@ -164,6 +187,16 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
     return partes.length > 0 ? partes : letra;
   }, [letra]);
 
+  // Detectar se é uma linha de seção (INTRO, REFRÃO, etc)
+  const isLinhaSecao = useMemo(() => {
+    if (!letra) return false;
+    const linhaSecaoComAcordes = /^([A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ\s]+):\s*(.+)$/;
+    const isSecaoComAcordes = linhaSecaoComAcordes.test(letra.trim());
+    const isSecaoSimples = /^[A-ZÁÀÂÃÉÊÍÓÔÕÚÇÜ\s:]+$/.test(letra.trim()) && 
+                           letra.trim() === letra.trim().toUpperCase();
+    return isSecaoComAcordes || isSecaoSimples;
+  }, [letra]);
+
   // Renderizar linha vazia (quebra de linha)
   if (isLinhaVazia) {
     return (
@@ -174,29 +207,174 @@ export function LinhaComAcordesComponent({ linha, exibirNumeroLinha = false }: P
           </div>
         )}
         <div className="linha-conteudo">
-          <div className="linha-acordes">&nbsp;</div>
-          <div className="linha-letra">&nbsp;</div>
+          <div className="linha-wrapper">&nbsp;</div>
         </div>
       </div>
     );
   }
 
+  // Renderizar linha de seção (INTRO, REFRÃO) - NÃO quebra
+  if (isLinhaSecao && acordes.length === 0) {
+    return (
+      <div className={`linha-cifra linha-secao ${exibirNumeroLinha ? 'com-numero' : ''}`}>
+        {exibirNumeroLinha && (
+          <div className="numero-linha" aria-label={`Linha ${numeroLinha}`}>
+            {numeroLinha}
+          </div>
+        )}
+        <div className="linha-conteudo">
+          <div className="linha-secao-wrapper">
+            {renderizarLetra}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Renderizar linha sem acordes (apenas letra comum)
+  if (acordes.length === 0 && letra) {
+    return (
+      <div className={`linha-cifra ${exibirNumeroLinha ? 'com-numero' : ''}`}>
+        {exibirNumeroLinha && (
+          <div className="numero-linha" aria-label={`Linha ${numeroLinha}`}>
+            {numeroLinha}
+          </div>
+        )}
+        <div className="linha-conteudo">
+          <div className="linha-letra-sem-acorde">
+            {renderizarLetra}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Renderizar solo (apenas acordes, sem letra)
+  if (isSolo) {
+    return (
+      <div className={`linha-cifra linha-solo ${exibirNumeroLinha ? 'com-numero' : ''}`}>
+        {exibirNumeroLinha && (
+          <div className="numero-linha" aria-label={`Linha ${numeroLinha}`}>
+            {numeroLinha}
+          </div>
+        )}
+        <div className="linha-conteudo">
+          <div className="linha-solo-wrapper">
+            {acordes.map((a, i) => (
+              <span key={i} className="acorde-solo">
+                {a.acorde}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  /**
+   * RENDERIZAÇÃO PRINCIPAL: Linha com acordes + letra
+   * Usa tokens para garantir quebra sincronizada entre acordes e letras
+   */
   return (
-    <div className={`linha-cifra ${isSolo ? 'linha-solo' : ''} ${exibirNumeroLinha ? 'com-numero' : ''}`}>
+    <div className={`linha-cifra ${exibirNumeroLinha ? 'com-numero' : ''}`}>
       {exibirNumeroLinha && (
         <div className="numero-linha" aria-label={`Linha ${numeroLinha}`}>
           {numeroLinha}
         </div>
       )}
       <div className="linha-conteudo">
-        <div className="linha-acordes" aria-label="acordes">
-          {linhaAcordesRenderizada || '\u00A0'}
+        {/* Container flex que permite wrap entre tokens (palavras) */}
+        <div className="linha-tokens-wrapper">
+          {/* Renderizar cada token (palavra ou espaço) */}
+          {tokens.map((token, index) => {
+            if (token.type === 'space') {
+              // Token de espaço: renderizar com estrutura de duas linhas (acordes + letra)
+              // para garantir que acordes posicionados sobre espaços apareçam
+              return (
+                <span key={index} className="token-space">
+                  {/* Linha de acordes (em cima) */}
+                  <span className="token-acordes">
+                    {token.acordes.length > 0 ? (
+                      // Renderizar acordes sobre espaços
+                      (() => {
+                        const maxLength = Math.max(
+                          token.text.length,
+                          ...token.acordes.map(a => a.offset + a.acorde.length)
+                        );
+                        const chars = Array(maxLength).fill('\u00A0');
+                        token.acordes.forEach(({ acorde, offset }) => {
+                          acorde.split('').forEach((char, i) => {
+                            chars[offset + i] = char;
+                          });
+                        });
+                        return chars.join('');
+                      })()
+                    ) : (
+                      '\u00A0'.repeat(token.text.length)
+                    )}
+                  </span>
+                  {/* Linha de letra (embaixo) */}
+                  <span className="token-letra">
+                    {(() => {
+                      if (token.acordes.length > 0) {
+                        const maxLength = Math.max(
+                          token.text.length,
+                          ...token.acordes.map(a => a.offset + a.acorde.length)
+                        );
+                        return token.text.replace(/ /g, '\u00A0').padEnd(maxLength, '\u00A0');
+                      }
+                      return token.text.replace(/ /g, '\u00A0');
+                    })()}
+                  </span>
+                </span>
+              );
+            }
+
+            // Token palavra: renderizar acordes em cima e palavra embaixo
+            return (
+              <span key={index} className="token-word">
+                {/* Linha de acordes (em cima) */}
+                <span className="token-acordes">
+                  {token.acordes.length > 0 ? (
+                    // Criar string de acordes com posicionamento
+                    // Calcular largura máxima: maior valor entre comprimento da palavra
+                    // e o final do último acorde (offset + comprimento)
+                    (() => {
+                      const maxLength = Math.max(
+                        token.text.length,
+                        ...token.acordes.map(a => a.offset + a.acorde.length)
+                      );
+                      const chars = Array(maxLength).fill('\u00A0');
+                      token.acordes.forEach(({ acorde, offset }) => {
+                        acorde.split('').forEach((char, i) => {
+                          chars[offset + i] = char;
+                        });
+                      });
+                      return chars.join('');
+                    })()
+                  ) : (
+                    '\u00A0' // Espaço vazio se não há acorde
+                  )}
+                </span>
+                
+                {/* Linha de letra (embaixo) */}
+                {/* Deve ter mesma largura que acordes para manter alinhamento monoespaçado */}
+                <span className="token-letra">
+                  {(() => {
+                    if (token.acordes.length > 0) {
+                      const maxLength = Math.max(
+                        token.text.length,
+                        ...token.acordes.map(a => a.offset + a.acorde.length)
+                      );
+                      return token.text.padEnd(maxLength, '\u00A0');
+                    }
+                    return token.text;
+                  })()}
+                </span>
+              </span>
+            );
+          })}
         </div>
-        {!isSolo && (
-          <div className="linha-letra">
-            {renderizarLetra}
-          </div>
-        )}
       </div>
     </div>
   );

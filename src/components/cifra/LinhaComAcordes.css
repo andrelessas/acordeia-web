@@ -6,9 +6,11 @@
 }
 
 /* Layout com número da linha */
+/* Usa grid para garantir que o número não sobreponha o conteúdo */
 .linha-cifra.com-numero {
-  display: flex;
-  gap: var(--space-3);
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  column-gap: var(--space-4);
   align-items: flex-start;
 }
 
@@ -17,38 +19,278 @@
   font-size: var(--font-size-xs);
   color: var(--color-text-muted);
   font-weight: var(--font-weight-medium);
+  width: 32px;
   min-width: 32px;
+  max-width: 32px;
   text-align: right;
   padding-top: 2px;
   user-select: none;
   opacity: 0.6;
+  flex-shrink: 0;
 }
 
 .linha-conteudo {
   flex: 1;
   min-width: 0;
+  width: 100%;
+}
+
+/**
+ * NOVA ESTRUTURA: Renderização baseada em tokens (palavras)
+ * Permite quebra de linha entre palavras, mantendo acordes sincronizados
+ */
+
+/* Container principal dos tokens - permite wrap entre palavras */
+/* IMPORTANTE: padding-left aplicado inline (via style) para preservar recuo após quebra */
+.linha-tokens-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  font-family: var(--font-mono);
+  width: 100%;
+  /* Altura consistente: garante que todas as linhas tenham mesmo espaçamento vertical */
+  min-height: calc(1.4em + var(--cifra-line-height) * var(--cifra-letra-size));
+}
+
+/* Token que representa uma palavra: contém acorde (em cima) + letra (embaixo) */
+/* inline-flex para ocupar apenas o espaço necessário e permitir wrap */
+.token-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  vertical-align: top;
+  white-space: pre;
+  /* Importante: não quebrar DENTRO da palavra */
+  word-break: keep-all;
+  /* Altura padronizada para consistência vertical */
+  min-height: calc(1.4em + var(--cifra-line-height) * var(--cifra-letra-size));
+  /* Remover margens verticais */
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Linha de acordes dentro do token (em cima da palavra) */
+.token-acordes {
+  font-family: var(--font-mono);
+  font-size: var(--cifra-acorde-size);
+  color: var(--color-acorde);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  white-space: pre;
+  letter-spacing: var(--letter-spacing-normal);
+  /* Altura fixa para consistência */
+  height: 1.4em;
+  min-height: 1.4em;
+  text-shadow: 0 0 20px var(--color-acorde-glow);
+  user-select: all;
+  /* Remover margens */
+  margin: 0;
+  padding: 0;
+}
+
+/* Linha de letra dentro do token (embaixo do acorde) */
+.token-letra {
+  font-family: var(--font-mono);
+  font-size: var(--cifra-letra-size);
+  color: var(--color-letra);
+  line-height: var(--cifra-line-height);
+  white-space: pre;
+  letter-spacing: var(--letter-spacing-normal);
+  user-select: all;
+  /* Altura consistente */
+  min-height: calc(var(--cifra-line-height) * var(--cifra-letra-size));
+  /* Remover margens */
+  margin: 0;
+  padding: 0;
+}
+
+/* Espaços entre palavras - agora com estrutura de duas linhas (acordes + letra) */
+/* Permite renderizar acordes que caem sobre espaços */
+.token-space {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  vertical-align: top;
+  white-space: pre;
+  font-family: var(--font-mono);
+  word-break: keep-all;
+  min-height: calc(1.4em + var(--cifra-line-height) * var(--cifra-letra-size));
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Linha vazia (quebra de linha) */
+.linha-vazia .linha-wrapper {
+  min-height: 0.8em;
+}
+
+/**
+ * LINHA DE SEÇÃO (INTRO, REFRÃO, etc)
+ * NÃO deve quebrar - usa scroll horizontal se necessário
+ */
+.linha-cifra.linha-secao {
+  margin-bottom: var(--space-3);
+}
+
+.linha-secao-wrapper {
+  font-family: var(--font-mono);
+  font-size: var(--cifra-letra-size);
+  color: var(--color-letra);
+  line-height: var(--cifra-line-height);
+  white-space: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* Scrollbar sutil */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+  padding: var(--space-1) 0;
+}
+
+.linha-secao-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+
+.linha-secao-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.linha-secao-wrapper::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 2px;
+}
+
+.linha-secao-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-subtle);
+}
+
+/* Linha sem acordes (apenas letra) */
+.linha-letra-sem-acorde {
+  font-family: var(--font-mono);
+  font-size: var(--cifra-letra-size);
+  color: var(--color-letra);
+  line-height: var(--cifra-line-height);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  letter-spacing: var(--letter-spacing-normal);
+  user-select: all;
+  /* Quebrar apenas em espaços (limites de palavra) */
+  word-break: normal;
+}
+
+/* Acordes inline (entre colchetes, parênteses ou seções) */
+.acorde-inline {
+  color: var(--color-acorde);
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 0 8px var(--color-acorde-glow);
+  padding: 0 2px;
+  background: var(--color-acorde-bg);
+  border-radius: 3px;
+  display: inline-block;
+  white-space: nowrap;
+  margin: 0 2px;
+}
+
+/* Linha solo - apenas acordes sem letra (instrumental/solo) */
+.linha-cifra.linha-solo {
+  margin-bottom: var(--space-3);
+}
+
+.linha-solo-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  background: var(--color-acorde-bg);
+  border-left: 3px solid var(--color-acorde);
+  padding-left: var(--space-3);
+  border-radius: var(--border-radius-sm);
+}
+
+.acorde-solo {
+  font-family: var(--font-mono);
+  font-size: calc(var(--cifra-acorde-size) * 1.1);
+  color: var(--color-acorde);
+  font-weight: var(--font-weight-bold);
+  text-shadow: 0 0 20px var(--color-acorde-glow);
+  white-space: nowrap;
+  user-select: all;
 }
 
 .linha-cifra:hover {
   background: var(--color-surface);
 }
 
-/* Linha vazia (quebra de linha) */
-.linha-cifra.linha-vazia {
-  min-height: 0.8em;
-  margin-bottom: var(--space-4);
-  padding: 0;
-}
-
 .linha-cifra.linha-vazia:hover {
   background: transparent;
 }
 
-.linha-cifra.linha-vazia .linha-acordes,
-.linha-cifra.linha-vazia .linha-letra {
-  display: none;
+/**
+ * MODO PALCO
+ * Ajustes de tamanho e espaçamento para apresentação ao vivo
+ */
+
+.modo-palco .linha-cifra {
+  margin-bottom: var(--space-1);
+  animation: slideUp var(--transition-slow) ease-out;
+  animation-fill-mode: both;
 }
 
+@media (min-width: 375px) {
+  .modo-palco .linha-cifra {
+    margin-bottom: var(--space-2);
+  }
+}
+
+@media (min-width: 768px) {
+  .modo-palco .linha-cifra {
+    margin-bottom: var(--space-3);
+  }
+}
+
+/* Modo palco - tokens */
+.modo-palco .token-acordes {
+  font-size: var(--stage-acorde-size);
+  text-shadow: 0 0 30px var(--color-acorde-glow);
+}
+
+.modo-palco .token-letra {
+  font-size: var(--stage-letra-size);
+  line-height: var(--stage-line-height);
+}
+
+.modo-palco .token-space {
+  font-size: var(--stage-letra-size);
+  line-height: var(--stage-line-height);
+}
+
+/* Modo palco - letra sem acorde */
+.modo-palco .linha-letra-sem-acorde {
+  font-size: var(--stage-letra-size);
+  line-height: var(--stage-line-height);
+}
+
+/* Modo palco - linha solo */
+.modo-palco .linha-cifra.linha-solo {
+  margin-bottom: var(--space-4);
+}
+
+.modo-palco .acorde-solo {
+  font-size: calc(var(--stage-acorde-size) * 1.15);
+}
+
+/* Animações de entrada no modo palco */
+.modo-palco .linha-cifra:nth-child(1) { animation-delay: 0ms; }
+.modo-palco .linha-cifra:nth-child(2) { animation-delay: 30ms; }
+.modo-palco .linha-cifra:nth-child(3) { animation-delay: 60ms; }
+.modo-palco .linha-cifra:nth-child(4) { animation-delay: 90ms; }
+.modo-palco .linha-cifra:nth-child(5) { animation-delay: 120ms; }
+
+/* ===== ESTILOS LEGADOS (mantidos para retrocompatibilidade) ===== */
+
+/* Estrutura antiga - caso algum código ainda use */
 .linha-acordes {
   font-family: var(--font-mono);
   font-size: var(--cifra-acorde-size);
@@ -76,58 +318,6 @@
   user-select: all;
 }
 
-/* Acordes inline (entre colchetes) */
-.acorde-inline {
-  color: var(--color-acorde);
-  font-weight: var(--font-weight-bold);
-  text-shadow: 0 0 8px var(--color-acorde-glow);
-  padding: 0 2px;
-  background: var(--color-acorde-bg);
-  border-radius: 3px;
-}
-
-/* Linha solo - apenas acordes sem letra (instrumental/solo) */
-.linha-solo {
-  margin-bottom: var(--space-3);
-}
-
-.linha-solo .linha-acordes {
-  font-size: calc(var(--cifra-acorde-size) * 1.1);
-  padding: var(--space-2) 0;
-  background: var(--color-acorde-bg);
-  border-left: 3px solid var(--color-acorde);
-  padding-left: var(--space-3);
-  border-radius: var(--border-radius-sm);
-}
-
-/* Solo em modo palco */
-.modo-palco .linha-solo {
-  margin-bottom: var(--space-4);
-}
-
-.modo-palco .linha-solo .linha-acordes {
-  font-size: calc(var(--stage-acorde-size) * 1.15);
-  padding: var(--space-3) 0;
-  padding-left: var(--space-4);
-  border-left-width: 4px;
-}
-
-.modo-palco .linha-cifra {
-  margin-bottom: var(--space-1);
-}
-
-@media (min-width: 375px) {
-  .modo-palco .linha-cifra {
-    margin-bottom: var(--space-2);
-  }
-}
-
-@media (min-width: 768px) {
-  .modo-palco .linha-cifra {
-    margin-bottom: var(--space-3);
-  }
-}
-
 .modo-palco .linha-acordes {
   font-size: var(--stage-acorde-size);
   text-shadow: 0 0 30px var(--color-acorde-glow);
@@ -139,14 +329,3 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
-
-.modo-palco .linha-cifra {
-  animation: slideUp var(--transition-slow) ease-out;
-  animation-fill-mode: both;
-}
-
-.modo-palco .linha-cifra:nth-child(1) { animation-delay: 0ms; }
-.modo-palco .linha-cifra:nth-child(2) { animation-delay: 30ms; }
-.modo-palco .linha-cifra:nth-child(3) { animation-delay: 60ms; }
-.modo-palco .linha-cifra:nth-child(4) { animation-delay: 90ms; }
-.modo-palco .linha-cifra:nth-child(5) { animation-delay: 120ms; }
